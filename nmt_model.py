@@ -1,24 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-CS224N 2018-19: Homework 4
-nmt_model.py: NMT Model
-Pencheng Yin <pcyin@cs.cmu.edu>
-Sahil Chopra <schopra8@stanford.edu>
-"""
-from collections import namedtuple
-import sys
-from typing import List, Tuple, Dict, Set, Union
-import torch
+import sys, torch
 import torch.nn as nn
 import torch.nn.utils
 import torch.nn.functional as F
+from collections import namedtuple
+from typing import List, Tuple, Dict, Set, Union
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
-
 from model_embeddings import ModelEmbeddings
-Hypothesis = namedtuple('Hypothesis', ['value', 'score'])
 
+Hypothesis = namedtuple('Hypothesis', ['value', 'score'])
 
 class NMT(nn.Module):
     """ Simple Neural Machine Translation Model:
@@ -41,7 +33,7 @@ class NMT(nn.Module):
         self.dropout_rate = dropout_rate
         self.vocab = vocab
 
-        # default values
+        # Default values
         self.encoder = None 
         self.decoder = None
         self.h_projection = None
@@ -50,7 +42,6 @@ class NMT(nn.Module):
         self.combined_output_projection = None
         self.target_vocab_projection = None
         self.dropout = None
-
 
         ### YOUR CODE HERE (~8 Lines)
         ### TODO - Initialize the following variables:
@@ -75,7 +66,6 @@ class NMT(nn.Module):
 
 
         ### END YOUR CODE
-
 
     def forward(self, source: List[List[str]], target: List[List[str]]) -> torch.Tensor:
         """ Take a mini-batch of source and target sentences, compute the log-likelihood of
@@ -114,7 +104,6 @@ class NMT(nn.Module):
         target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
         scores = target_gold_words_log_prob.sum(dim=0)
         return scores
-
 
     def encode(self, source_padded: torch.Tensor, source_lengths: List[int]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """ Apply the encoder to source sentences to obtain encoder hidden states.
@@ -167,7 +156,6 @@ class NMT(nn.Module):
         ### END YOUR CODE
 
         return enc_hiddens, dec_init_state
-
 
     def decode(self, enc_hiddens: torch.Tensor, enc_masks: torch.Tensor,
                 dec_init_state: Tuple[torch.Tensor, torch.Tensor], target_padded: torch.Tensor) -> torch.Tensor:
@@ -237,7 +225,6 @@ class NMT(nn.Module):
         ### END YOUR CODE
 
         return combined_outputs
-
 
     def step(self, Ybar_t: torch.Tensor,
             dec_state: Tuple[torch.Tensor, torch.Tensor],
@@ -346,7 +333,6 @@ class NMT(nn.Module):
         for e_id, src_len in enumerate(source_lengths):
             enc_masks[e_id, src_len:] = 1
         return enc_masks.to(self.device)
-
 
     def beam_search(self, src_sent: List[str], beam_size: int=5, max_decoding_time_step: int=70) -> List[Hypothesis]:
         """ Given a single source sentence, perform beam search, yielding translations in the target language.

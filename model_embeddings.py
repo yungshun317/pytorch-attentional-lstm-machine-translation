@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-CS224N 2018-19: Homework 4
-model_embeddings.py: Embeddings for the NMT model
-Pencheng Yin <pcyin@cs.cmu.edu>
-Sahil Chopra <schopra8@stanford.edu>
-Anand Dhoot <anandd@stanford.edu>
-"""
-
 import torch.nn as nn
 
 class ModelEmbeddings(nn.Module): 
@@ -26,7 +18,7 @@ class ModelEmbeddings(nn.Module):
         super(ModelEmbeddings, self).__init__()
         self.embed_size = embed_size
 
-        # default values
+        # Default values
         self.source = None
         self.target = None
 
@@ -53,5 +45,3 @@ class ModelEmbeddings(nn.Module):
         
 
         ### END YOUR CODE
-
-

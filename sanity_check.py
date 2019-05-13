@@ -2,36 +2,22 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2018-19: Homework 4
-sanity_check.py: sanity checks for assignment 4
-Sahil Chopra <schopra8@stanford.edu>
-Michael Hahn <>
-
 Usage:
     sanity_check.py 1d
     sanity_check.py 1e
     sanity_check.py 1f
-
 """
-import math
-import sys
-import pickle
-import time
 
+import math, sys, pickle, time, torch
 import numpy as np
-
+import torch.nn as nn
+import torch.nn.utils
 from docopt import docopt
 from typing import List, Tuple, Dict, Set, Union
 from tqdm import tqdm
 from utils import read_corpus, batch_iter
 from vocab import Vocab, VocabEntry
-
 from nmt_model import NMT
-
-
-import torch
-import torch.nn as nn
-import torch.nn.utils
 
 #----------
 # CONSTANTS
@@ -55,7 +41,6 @@ def reinitialize_layers(model):
             nn.Dropout(DROPOUT_RATE)
     with torch.no_grad():
         model.apply(init_weights)
-
 
 def generate_outputs(model, source, target, vocab):
     """ Generate outputs.
@@ -82,7 +67,6 @@ def generate_outputs(model, source, target, vocab):
     torch.save(dec_init_state, './sanity_check_en_es_data/dec_init_state.pkl') 
     torch.save(enc_masks, './sanity_check_en_es_data/enc_masks.pkl')
     torch.save(combined_outputs, './sanity_check_en_es_data/combined_outputs.pkl')
-
 
 def question_1d_sanity_check(model, src_sents, tgt_sents, vocab):
     """ Sanity check for question 1d. 
@@ -112,7 +96,6 @@ def question_1d_sanity_check(model, src_sents, tgt_sents, vocab):
     print ("-"*80)
     print("All Sanity Checks Passed for Question 1d: Encode!")
     print ("-"*80)
-
 
 def question_1e_sanity_check(model, src_sents, tgt_sents, vocab):
     """ Sanity check for question 1e. 
@@ -186,7 +169,6 @@ def question_1f_sanity_check(model, src_sents, tgt_sents, vocab):
     print("All Sanity Checks Passed for Question 1f: Step!")
     print ("-"*80)
 
-
 def main():
     """ Main func.
     """
@@ -230,7 +212,5 @@ def main():
     else:
         raise RuntimeError('invalid run mode')
 
-
 if __name__ == '__main__':
     main()
-    

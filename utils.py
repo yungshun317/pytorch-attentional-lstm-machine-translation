@@ -1,21 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-CS224N 2018-19: Homework 4
-nmt.py: NMT Model
-Pencheng Yin <pcyin@cs.cmu.edu>
-Sahil Chopra <schopra8@stanford.edu>
-"""
-
-import math
-from typing import List
-
+import math, torch
 import numpy as np
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from typing import List
 
 def pad_sents(sents, pad_token):
     """ Pad list of sentences according to the longest sentence in the batch.
@@ -35,8 +25,6 @@ def pad_sents(sents, pad_token):
 
     return sents_padded
 
-
-
 def read_corpus(file_path, source):
     """ Read file, where each sentence is dilineated by a `\n`.
     @param file_path (str): path to file containing corpus
@@ -52,7 +40,6 @@ def read_corpus(file_path, source):
         data.append(sent)
 
     return data
-
 
 def batch_iter(data, batch_size, shuffle=False):
     """ Yield batches of source and target sentences reverse sorted by length (largest to smallest).
@@ -75,4 +62,3 @@ def batch_iter(data, batch_size, shuffle=False):
         tgt_sents = [e[1] for e in examples]
 
         yield src_sents, tgt_sents
-

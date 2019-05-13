@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2018-19: Homework 4
-vocab.py: Vocabulary Generation
-Pencheng Yin <pcyin@cs.cmu.edu>
-Sahil Chopra <schopra8@stanford.edu>
-
 Usage:
     vocab.py --train-src=<file> --train-tgt=<file> [options] VOCAB_FILE
 
@@ -18,14 +13,12 @@ Options:
     --freq-cutoff=<int>        frequency cutoff [default: 2]
 """
 
+import json, torch
 from collections import Counter
 from docopt import docopt
 from itertools import chain
-import json
-import torch
 from typing import List
 from utils import read_corpus, pad_sents
-
 
 class VocabEntry(object):
     """ Vocabulary Entry, i.e. structure containing either
@@ -200,8 +193,6 @@ class Vocab(object):
         when printing the object.
         """
         return 'Vocab(source %d words, target %d words)' % (len(self.src), len(self.tgt))
-
-
 
 if __name__ == '__main__':
     args = docopt(__doc__)

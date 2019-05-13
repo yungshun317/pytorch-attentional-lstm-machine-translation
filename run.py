@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2018-19: Homework 4
-run.py: Run Script for Simple NMT Model
-Pencheng Yin <pcyin@cs.cmu.edu>
-Sahil Chopra <schopra8@stanford.edu>
-
 Usage:
     run.py train --train-src=<file> --train-tgt=<file> --dev-src=<file> --dev-tgt=<file> --vocab=<file> [options]
     run.py decode [options] MODEL_PATH TEST_SOURCE_FILE OUTPUT_FILE
@@ -40,24 +35,16 @@ Options:
     --dropout=<float>                       dropout [default: 0.3]
     --max-decoding-time-step=<int>          maximum number of decoding time steps [default: 70]
 """
-import math
-import sys
-import pickle
-import time
-
-
+import math, sys, pickle, time, torch
+import torch.nn.utils
+import numpy as np
 from docopt import docopt
 from nltk.translate.bleu_score import corpus_bleu, sentence_bleu, SmoothingFunction
 from nmt_model import Hypothesis, NMT
-import numpy as np
 from typing import List, Tuple, Dict, Set, Union
 from tqdm import tqdm
 from utils import read_corpus, batch_iter
 from vocab import Vocab, VocabEntry
-
-import torch
-import torch.nn.utils
-
 
 def evaluate_ppl(model, dev_data, batch_size=32):
     """ Evaluate perplexity on dev sentences
@@ -78,7 +65,8 @@ def evaluate_ppl(model, dev_data, batch_size=32):
             loss = -model(src_sents, tgt_sents).sum()
 
             cum_loss += loss.item()
-            tgt_word_num_to_predict = sum(len(s[1:]) for s in tgt_sents)  # omitting leading `<s>`
+            # Omit leading `<s>`
+            tgt_word_num_to_predict = sum(len(s[1:]) for s in tgt_sents)  
             cum_tgt_words += tgt_word_num_to_predict
 
         ppl = np.exp(cum_loss / cum_tgt_words)
@@ -87,7 +75,6 @@ def evaluate_ppl(model, dev_data, batch_size=32):
         model.train()
 
     return ppl
-
 
 def compute_corpus_level_bleu_score(references: List[List[str]], hypotheses: List[Hypothesis]) -> float:
     """ Given decoding results and reference sentences, compute corpus-level BLEU score.
@@ -100,7 +87,6 @@ def compute_corpus_level_bleu_score(references: List[List[str]], hypotheses: Lis
     bleu_score = corpus_bleu([[ref] for ref in references],
                              [hyp.value for hyp in hypotheses])
     return bleu_score
-
 
 def train(args: Dict):
     """ Train the NMT Model.
@@ -162,13 +148,14 @@ def train(args: Dict):
 
             batch_size = len(src_sents)
 
-            example_losses = -model(src_sents, tgt_sents) # (batch_size,)
+            # (batch_size,)
+            example_losses = -model(src_sents, tgt_sents)
             batch_loss = example_losses.sum()
             loss = batch_loss / batch_size
 
             loss.backward()
 
-            # clip gradient
+            # Clip gradient
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), clip_grad)
 
             optimizer.step()
@@ -177,7 +164,8 @@ def train(args: Dict):
             report_loss += batch_losses_val
             cum_loss += batch_losses_val
 
-            tgt_words_num_to_predict = sum(len(s[1:]) for s in tgt_sents)  # omitting leading `<s>`
+            # Omit leading `<s>`
+            tgt_words_num_to_predict = sum(len(s[1:]) for s in tgt_sents)  
             report_tgt_words += tgt_words_num_to_predict
             cum_tgt_words += tgt_words_num_to_predict
             report_examples += batch_size
@@ -195,7 +183,7 @@ def train(args: Dict):
                 train_time = time.time()
                 report_loss = report_tgt_words = report_examples = 0.
 
-            # perform validation
+            # Perform validation
             if train_iter % valid_niter == 0:
                 print('epoch %d, iter %d, cum. loss %.2f, cum. ppl %.2f cum. examples %d' % (epoch, train_iter,
                                                                                          cum_loss / cum_examples,
@@ -207,7 +195,7 @@ def train(args: Dict):
 
                 print('begin validation ...', file=sys.stderr)
 
-                # compute dev. ppl and bleu
+                # Compute dev. ppl and bleu
                 dev_ppl = evaluate_ppl(model, dev_data, batch_size=128)   # dev batch size can be a bit larger
                 valid_metric = -dev_ppl
 
@@ -221,7 +209,7 @@ def train(args: Dict):
                     print('save currently the best model to [%s]' % model_save_path, file=sys.stderr)
                     model.save(model_save_path)
 
-                    # also save the optimizers' state
+                    # Also save the optimizers' state
                     torch.save(optimizer.state_dict(), model_save_path + '.optim')
                 elif patience < int(args['--patience']):
                     patience += 1
@@ -234,11 +222,11 @@ def train(args: Dict):
                             print('early stop!', file=sys.stderr)
                             exit(0)
 
-                        # decay lr, and restore from previously best checkpoint
+                        # Decay lr, and restore from previously best checkpoint
                         lr = optimizer.param_groups[0]['lr'] * float(args['--lr-decay'])
                         print('load previously best model and decay learning rate to %f' % lr, file=sys.stderr)
 
-                        # load model
+                        # Load model
                         params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
                         model.load_state_dict(params['state_dict'])
                         model = model.to(device)
@@ -246,17 +234,16 @@ def train(args: Dict):
                         print('restore parameters of the optimizers', file=sys.stderr)
                         optimizer.load_state_dict(torch.load(model_save_path + '.optim'))
 
-                        # set new lr
+                        # Set new lr
                         for param_group in optimizer.param_groups:
                             param_group['lr'] = lr
 
-                        # reset patience
+                        # Reset patience
                         patience = 0
 
                 if epoch == int(args['--max-epoch']):
                     print('reached maximum number of epochs!', file=sys.stderr)
                     exit(0)
-
 
 def decode(args: Dict[str, str]):
     """ Performs decoding on a test set, and save the best-scoring decoding results.
@@ -292,7 +279,6 @@ def decode(args: Dict[str, str]):
             hyp_sent = ' '.join(top_hyp.value)
             f.write(hyp_sent + '\n')
 
-
 def beam_search(model: NMT, test_data_src: List[List[str]], beam_size: int, max_decoding_time_step: int) -> List[List[Hypothesis]]:
     """ Run beam search to construct hypotheses for a list of src-language sentences.
     @param model (NMT): NMT Model
@@ -315,7 +301,6 @@ def beam_search(model: NMT, test_data_src: List[List[str]], beam_size: int, max_
 
     return hypotheses
 
-
 def main():
     """ Main func.
     """
@@ -324,7 +309,7 @@ def main():
     # Check pytorch version
     assert(torch.__version__ == "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
 
-    # seed the random number generators
+    # Seed the random number generators
     seed = int(args['--seed'])
     torch.manual_seed(seed)
     if args['--cuda']:
@@ -337,7 +322,6 @@ def main():
         decode(args)
     else:
         raise RuntimeError('invalid run mode')
-
 
 if __name__ == '__main__':
     main()
