@@ -18,11 +18,11 @@ def pad_sents(sents, pad_token):
     """
     sents_padded = []
 
-    ### YOUR CODE HERE (~6 Lines)
-
-
-    ### END YOUR CODE
-
+    max_length = max([len(sent) for sent in sents])
+    for sent in sents:
+        sent_length = len(sent)
+        sents_padded.append(sent + (max_length - sent_length) * [pad_token])
+    
     return sents_padded
 
 def read_corpus(file_path, source):

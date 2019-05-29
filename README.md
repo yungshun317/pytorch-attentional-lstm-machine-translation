@@ -15,7 +15,7 @@ Here is the project structure:
 * `model_embeddings.py`: a class that converts input words to their embeddings.
 * `nmt_model.py`: implements a simple neural machine translation model.
 
-Although they look panicking, the code provided by Stanford already completes most of the above files except `utils.py`, `model_embeddings.py`, and `nmt_model.py`, which only leaves a little space for you to fill in.
+Although they look panicking, the code provided by Stanford already completes most of the above files except `utils.py` (`pad_sents`), `model_embeddings.py` (`__init__`), and `nmt_model.py`, which only leaves a little space for you to fill in.
 
 ## Todos
  - Learn NLP from Stanford's [Speech and Language Processing](https://web.stanford.edu/~jurafsky/slp3/) and [Natural Language Processing with Deep Learning](http://web.stanford.edu/class/cs224n/) materials.
