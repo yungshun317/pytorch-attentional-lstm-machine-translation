@@ -51,7 +51,7 @@ def evaluate_ppl(model, dev_data, batch_size=32):
     @param model (NMT): NMT Model
     @param dev_data (list of (src_sent, tgt_sent)): list of tuples containing source and target sentence
     @param batch_size (batch size)
-    @returns ppl (perplixty on dev sentences)
+    @returns ppl (perplexity on dev sentences)
     """
     was_training = model.training
     model.eval()
@@ -196,7 +196,8 @@ def train(args: Dict):
                 print('begin validation ...', file=sys.stderr)
 
                 # Compute dev. ppl and bleu
-                dev_ppl = evaluate_ppl(model, dev_data, batch_size=128)   # dev batch size can be a bit larger
+                # dev batch size can be a bit larger
+                dev_ppl = evaluate_ppl(model, dev_data, batch_size=128)
                 valid_metric = -dev_ppl
 
                 print('validation: iter %d, dev. ppl %f' % (train_iter, dev_ppl), file=sys.stderr)
@@ -307,7 +308,7 @@ def main():
     args = docopt(__doc__)
 
     # Check pytorch version
-    assert(torch.__version__ == "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
+    assert(torch.__version__ == "1.2.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.2.0".format(torch.__version__)
 
     # Seed the random number generators
     seed = int(args['--seed'])

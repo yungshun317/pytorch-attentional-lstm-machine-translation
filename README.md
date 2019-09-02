@@ -19,7 +19,9 @@ Here is the project structure:
     * `decode`: constructs `Y` and runs the `step` function over every timestep for the input.
     * `step`: applies the decoder's LSTM cell for a single timestep, computing the encoding of the target word `dec_state`, the attention scores `e_t`, the attention distribution `alpha_t`, the attentional output `a_t`, and finally the combined output `O_t`.
 
-Although they look panicking, the code provided by Stanford already completes most of the above files except `utils.py` (`pad_sents`), `model_embeddings.py` (`__init__`), and `nmt_model.py` (`__init__`, `encode`, `decode`, `step`), which only leaves a little space for you to fill in.
+Although they look panicking, the code provided by Stanford already completes most of the above files except `utils.py` (`pad_sents`), `model_embeddings.py` (`__init__`), and `nmt_model.py` (`__init__`, `encode`, `decode`, `step`), which only leaves a little space for us to fill in. Also you had better take reference of [the handout](http://web.stanford.edu/class/cs224n/assignments/a4.pdf) for clarification.
+
+## Up & Running
 
 Test the `encode` implementation.
 ```sh
@@ -61,6 +63,40 @@ e_t Sanity Checks Passed!
 All Sanity Checks Passed for Question 1f: Step!
 --------------------------------------------------------------------------------
 ```
+
+Generate the necessary vocab file.
+```sh
+$ python vocab.py --train-src=./en_es_data/train.es --train-tgt=./en_es_data/train.en vocab.json
+read in source sentences: ./en_es_data/train.es
+read in target sentences: ./en_es_data/train.en
+initialize source vocabulary ..
+number of word types: 172418, number of word types w/ frequency >= 2: 80623
+initialize target vocabulary ..
+number of word types: 128873, number of word types w/ frequency >= 2: 64215
+generated vocabulary, source 50004 words, target 50002 words
+vocabulary saved to vocab.json
+```
+
+Train the model with GPU support.
+```sh
+$ python -W ignore run.py train --train-src=./en_es_data/train.es --train-tgt=./en_es_data/train.en --dev-src=./en_es_data/dev.es --dev-tgt=./en_es_data/dev.en --vocab=vocab.json --cuda
+...
+epoch 13, iter 88000, cum. loss 28.77, cum. ppl 5.11 cum. examples 64000
+begin validation ...
+validation: iter 88000, dev. ppl 17.137217
+hit patience 5
+hit #5 trial
+early stop!
+```
+Because masking via `torch.uint8` Tensors is now deprecated in favor of masking via `torch.bool` Tensors in PyTorch 1.2.0, the program will generate tons of warnings during training. I add `-W ignore` to hide these warnings.
+
+Test the model.
+```sh
+$ python run.py decode model.bin ./en_es_data/test.es ./en_es_data/test.en outputs/test_outputs.txt --cuda
+...
+Corpus BLEU: 22.65632218633906
+```
+We have model's corpus BLEU Score larger than 21 which meets the requirement.  
 
 ## Todos
  - Learn NLP from Stanford's [Speech and Language Processing](https://web.stanford.edu/~jurafsky/slp3/) and [Natural Language Processing with Deep Learning](http://web.stanford.edu/class/cs224n/) materials.
